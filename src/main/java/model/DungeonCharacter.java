@@ -7,7 +7,7 @@ public abstract class DungeonCharacter {
     private int attackMin;
     private int attackMax;
     private String characterName;
-    private int chanceToHit;
+    private double chanceToHit;
 
     public int getHitPoints() {
         return myHitPoints;
@@ -15,6 +15,10 @@ public abstract class DungeonCharacter {
 
     public int getAttackSpeed() {
         return attackSpeed;
+    }
+
+    public String getName() {
+        return characterName;
     }
 
     public void takeDamage(int amount) {
@@ -43,5 +47,17 @@ public abstract class DungeonCharacter {
         }
 
         return damage;
+    }
+
+    public DungeonCharacter(int hitPoints, int speed, int attackMinimum, int attackMaximum, String name, double hitChance) {
+        myHitPoints = hitPoints;
+        attackSpeed = speed;
+        attackMin = attackMinimum;
+        attackMax = attackMaximum;
+        characterName = name;
+        chanceToHit = hitChance;
+
+
+
     }
 }
