@@ -2,12 +2,12 @@ package model;
 import java.util.Random;
 
 public abstract class DungeonCharacter {
-    private int myHitPoints;
-    private int attackSpeed;
-    private int attackMin;
-    private int attackMax;
-    private String characterName;
-    private double chanceToHit;
+    protected int myHitPoints;
+    protected int attackSpeed;
+    protected int attackMin;
+    protected int attackMax;
+    protected String characterName;
+    protected double chanceToHit;
 
     public int getHitPoints() {
         return myHitPoints;
@@ -36,20 +36,16 @@ public abstract class DungeonCharacter {
     //NOTE: Outside the function, if attacks can deal no damage, change function to signify an attack misses
     //instead of just doing no damage. If all attacks do at least some damage, then just account for a no damage attack
     //outside the function
-    public int attack() {
+    public void attack(DungeonCharacter target) {
         //Used for attack chance and attack damage
         Random attackMod = new Random();
 
-        int damage = 0;
-
         if (attackMod.nextInt() < chanceToHit) {
-            damage = attackMod.nextInt(attackMin,attackMax);
+            target.takeDamage(attackMod.nextInt(attackMin,attackMax));
         }
-
-        return damage;
     }
 
-    public DungeonCharacter(int hitPoints, int speed, int attackMinimum, int attackMaximum, String name, double hitChance) {
+    protected DungeonCharacter(int hitPoints, int speed, int attackMinimum, int attackMaximum, String name, double hitChance) {
         myHitPoints = hitPoints;
         attackSpeed = speed;
         attackMin = attackMinimum;

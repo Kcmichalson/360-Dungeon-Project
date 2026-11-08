@@ -1,7 +1,7 @@
 package model;
 
 public class Gremlin extends Monster {
-    public Gremlin(int hitPoints, int speed, int attackMinimum, int attackMaximum, String name) {
-        super(hitPoints, speed, attackMinimum, attackMaximum, name);
+    public Gremlin() {
+        super(70, 5, 15, 30, "Gremlin", 80, 20,40, 0.4F);
     }
 }
