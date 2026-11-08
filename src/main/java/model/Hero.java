@@ -4,34 +4,79 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Represents Hero character in the dungeon.
+ *
+ * @author Vannak Traluch
+ * @author Kevin Michalson
+ * @version 11/08/2026
+ */
 public abstract class Hero extends DungeonCharacter {
-    private double blockChance = 20.00;
 
+    /** Maximum percentage value for block calculation. */
+    private static final double MAX_PERCENTAGE = 100.0;
 
-    private List<Collectible> inventory = new ArrayList<>();
-    private int pillarsFound = 0;
+    /** Chance for the hero to block an attack. */
+    private final double myBlockChance;
 
-    public Hero(int hitPoints, int speed, int attackMinimum, int attackMaximum, String name, int block, double hitChance) {
-        super(hitPoints, speed, attackMinimum, attackMaximum, name, hitChance);
-        blockChance = block;
+    /** Hero's inventory of collectibles. */
+    private final List<Collectible> myInventory;
 
+    /** Number of pillars the hero has found. */
+    private int myPillarsFound;
+
+    /**
+     * Constructs a Hero character.
+     *
+     * @param theHitPoints the starting hit points
+     * @param theSpeed the attack speed
+     * @param theAttackMinimum the minimum attack damage
+     * @param theAttackMaximum the maximum attack damage
+     * @param theName the character name
+     * @param theBlock the block chance percentage
+     * @param theHitChance the chance to land an attack
+     */
+    public Hero(final int theHitPoints, final int theSpeed, final int theAttackMinimum,
+                final int theAttackMaximum, final String theName, final int theBlock,
+                final double theHitChance) {
+        super(theHitPoints, theSpeed, theAttackMinimum, theAttackMaximum, theName, theHitChance);
+        myBlockChance = theBlock;
+        myInventory = new ArrayList<>();
+        myPillarsFound = 0;
     }
 
-    public void addCollectible(Collectible item) {
-        this.inventory.add(item);
-        if (item instanceof Pillar) {
-            this.pillarsFound++;
+    /**
+     * Adds item to the hero's inventory and updates pillar count.
+     *
+     * @param theItem the collectible to add
+     */
+    public void addCollectible(final Collectible theItem) {
+        myInventory.add(theItem);
+        if (theItem instanceof Pillar) {
+            myPillarsFound++;
         }
     }
 
-    //blockAttempt is here to potentially block incoming damage, but takes in damage as an argument
-    //to pass on to the take damage function
-    public void blockAttempt(int damage) {
-        Random blockAttempt = new Random();
+    /**
+     * Gets number of pillars the hero has collected.
+     *
+     * @return the number of pillars
+     */
+    public int getPillarsFound() {
+        return myPillarsFound;
+    }
 
-        //Only checks for FAILING the block, not for succeeding, this can be changed later
-        if (blockAttempt.nextDouble() < blockChance) {
-            takeDamage(damage);
+    /**
+     * Block incoming damage based on the hero's block chance.
+     *
+     * @param theDamage the amount of incoming damage
+     */
+    public void blockAttempt(final int theDamage) {
+        final Random randomBlock = new Random();
+
+        // I multiply it by 100 here so it scales correctly with the whole-number blockChance
+        if (randomBlock.nextDouble() * MAX_PERCENTAGE > myBlockChance) {
+            takeDamage(theDamage);
         }
     }
 }
