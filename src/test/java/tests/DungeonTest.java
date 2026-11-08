@@ -3,33 +3,48 @@ package tests;
 import model.Dungeon;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests the Dungeon.
+ *
+ * @author Kevin Michalson
+ * @version 11/08/2026
+ */
 public class DungeonTest {
 
-    private Dungeon dungeon;
+    /** The dungeon used for testing. */
+    private Dungeon myDungeon;
 
+    /**
+     * Sets up the test before each test.
+     */
     @BeforeEach
     public void setUp() {
-        dungeon = new Dungeon();
+        myDungeon = new Dungeon();
     }
 
+    /**
+     * Tests moving North.
+     */
     @Test
     public void testMoveNorthUpdatesCoordinates() {
-        int startRow = dungeon.getHeroRow();
+        final int startRow = myDungeon.getHeroRow();
+        myDungeon.move("NORTH");
 
-        dungeon.move("NORTH");
-
-        assertEquals(startRow - 1, dungeon.getHeroRow(), "Hero row should decrease by 1 moving North.");
+        assertEquals(startRow - 1, myDungeon.getHeroRow(),
+                "Hero row should decrease by 1 moving North.");
     }
 
+    /**
+     * Tests that movement code ignores casing. For ease of development later.
+     */
     @Test
     public void testMoveCaseInsensitive() {
-        int startCol = dungeon.getHeroCol();
+        final int startCol = myDungeon.getHeroCol();
+        myDungeon.move("eaSt");
 
-        dungeon.move("eaSt");
-
-        assertEquals(startCol + 1, dungeon.getHeroCol(), "Hero col should increase by 1 moving East regardless of case.");
+        assertEquals(startCol + 1, myDungeon.getHeroCol(),
+                "Hero col should increase by 1 moving East regardless of case.");
     }
 }
