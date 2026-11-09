@@ -2,15 +2,13 @@ package model;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 
-/**
- * Stores and generates a rectangular dungeon maze.
- */
 public class Dungeon {
 
     private static final String[] DIRECTIONS = {
@@ -24,64 +22,92 @@ public class Dungeon {
     private int myHeroRow;
     private int myHeroCol;
 
-    /**
-     * Creates a random 5-by-5 dungeon.
-     * This is a provisional default until the team chooses difficulty sizes.
-     */
     public Dungeon() {
         this(5, 5);
     }
 
-    /**
-     * Creates a random dungeon with the requested dimensions.
-     *
-     * @param theRows number of rows, at least 2
-     * @param theCols number of columns, at least 2
-     */
     public Dungeon(final int theRows, final int theCols) {
         this(theRows, theCols, new Random());
     }
 
     /**
-     * Allows a seeded random generator for reproducible tests.
-     *
-     * @param theRows number of rows, at least 2
-     * @param theCols number of columns, at least 2
-     * @param theRandom random generator
+     * Creates a connected maze, one entrance, one exit,
+     * and all four distinct pillars.
      */
     public Dungeon(final int theRows, final int theCols,
                    final Random theRandom) {
 
         if (theRows < 2 || theCols < 2) {
             throw new IllegalArgumentException(
-                    "The dungeon must have at least 2 rows and 2 columns.");
+                    "The dungeon needs at least two rows and columns.");
         }
 
-        Objects.requireNonNull(theRandom, "Random generator cannot be null.");
+        if ((long) theRows * theCols < 6) {
+            throw new IllegalArgumentException(
+                    "Four pillars and two endpoints require six rooms.");
+        }
+
+        Objects.requireNonNull(
+                theRandom, "Random generator cannot be null.");
 
         myMaze = new Room[theRows][theCols];
 
+        // The entrance uses index zero.
+        // The exit uses a different randomly selected index.
+        final int exitIndex =
+                1 + theRandom.nextInt(theRows * theCols - 1);
+
         for (int row = 0; row < theRows; row++) {
             for (int col = 0; col < theCols; col++) {
-                myMaze[row][col] = new Room();
+                final int roomIndex = row * theCols + col;
+                Room.Role role = Room.Role.ORDINARY;
+
+                if (roomIndex == 0) {
+                    role = Room.Role.ENTRANCE;
+                } else if (roomIndex == exitIndex) {
+                    role = Room.Role.EXIT;
+                }
+
+                myMaze[row][col] = new Room(role);
             }
         }
 
         generateMaze(theRandom);
+        placePillars(theRandom);
 
-        // Temporary starting position until entrance placement is implemented.
         myHeroRow = 0;
         myHeroCol = 0;
     }
 
     /**
-     * Generates a maze using randomized depth-first search.
-     * Every room is reachable, with no connections outside the grid.
+     * Places each pillar in a different ordinary room.
+     */
+    private void placePillars(final Random theRandom) {
+        final List<Room> eligibleRooms = new ArrayList<>();
+
+        for (final Room[] row : myMaze) {
+            for (final Room room : row) {
+                if (room.canPlaceContents()) {
+                    eligibleRooms.add(room);
+                }
+            }
+        }
+
+        Collections.shuffle(eligibleRooms, theRandom);
+
+        int index = 0;
+        for (final Pillar.Type type : Pillar.Type.values()) {
+            eligibleRooms.get(index).setPillar(new Pillar(type));
+            index++;
+        }
+    }
+
+    /**
+     * Connects every room using randomized depth-first search.
      */
     private void generateMaze(final Random theRandom) {
         final boolean[][] visited =
                 new boolean[getRows()][getCols()];
-
         final Deque<int[]> path = new ArrayDeque<>();
 
         final int startRow = theRandom.nextInt(getRows());
@@ -95,9 +121,13 @@ public class Dungeon {
             final int row = current[0];
             final int col = current[1];
 
-            final List<Integer> availableDirections = new ArrayList<>();
+            final List<Integer> availableDirections =
+                    new ArrayList<>();
 
-            for (int direction = 0; direction < DIRECTIONS.length; direction++) {
+            for (int direction = 0;
+                 direction < DIRECTIONS.length;
+                 direction++) {
+
                 final int nextRow = row + ROW_CHANGE[direction];
                 final int nextCol = col + COL_CHANGE[direction];
 
@@ -119,7 +149,6 @@ public class Dungeon {
 
                 myMaze[row][col].setDoor(
                         DIRECTIONS[direction], true);
-
                 myMaze[nextRow][nextCol].setDoor(
                         DIRECTIONS[oppositeDirection], true);
 
@@ -151,9 +180,6 @@ public class Dungeon {
         return -1;
     }
 
-    /**
-     * Checks both the door and the destination before allowing movement.
-     */
     public boolean isValidDoor(final String theDirection) {
         final int direction = getDirectionIndex(theDirection);
 
@@ -165,7 +191,8 @@ public class Dungeon {
         final int nextCol = myHeroCol + COL_CHANGE[direction];
 
         return isInside(nextRow, nextCol)
-                && getHeroCurrentRoom().hasDoor(DIRECTIONS[direction])
+                && getHeroCurrentRoom().hasDoor(
+                        DIRECTIONS[direction])
                 && myMaze[nextRow][nextCol].hasDoor(
                         DIRECTIONS[(direction + 2) % 4]);
     }
@@ -174,9 +201,6 @@ public class Dungeon {
         return myMaze[myHeroRow][myHeroCol];
     }
 
-    /**
-     * Moves the hero only when a valid connection exists.
-     */
     public void move(final String theDirection) {
         if (isValidDoor(theDirection)) {
             final int direction = getDirectionIndex(theDirection);
@@ -211,16 +235,13 @@ public class Dungeon {
     }
 
     /**
-     * Prints the maze structure using shared walls between rooms.
-     * Room contents are left blank in this structural representation.
+     * Shows walls, doors, entrance, exit, and pillars.
      */
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
 
         for (int row = 0; row < getRows(); row++) {
-
-            // North walls and doors for this row.
             for (int col = 0; col < getCols(); col++) {
                 result.append('*');
                 result.append(
@@ -228,18 +249,26 @@ public class Dungeon {
             }
             result.append("*\n");
 
-            // West walls/doors and room centers.
             for (int col = 0; col < getCols(); col++) {
-                result.append(
-                        myMaze[row][col].hasDoor("WEST") ? '|' : '*');
-                result.append(' ');
+                final Room room = myMaze[row][col];
+
+                result.append(room.hasDoor("WEST") ? '|' : '*');
+
+                if (room.isEntrance()) {
+                    result.append('i');
+                } else if (room.isExit()) {
+                    result.append('O');
+                } else if (room.hasPillar()) {
+                    result.append(
+                            room.getPillar().getType().name().charAt(0));
+                } else {
+                    result.append(' ');
+                }
             }
             result.append("*\n");
         }
 
-        // Bottom boundary.
         result.append("*".repeat(getCols() * 2 + 1));
-
         return result.toString();
     }
 }
