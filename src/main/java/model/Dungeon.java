@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
@@ -53,20 +54,10 @@ public class Dungeon {
     /** Current column index of the hero. */
     private int myHeroCol;
 
-    /**
-     * Creates a random 5-by-5 dungeon.
-     * This is a provisional default until the team chooses difficulty sizes.
-     */
     public Dungeon() {
         this(DEFAULT_ROWS, DEFAULT_COLS);
     }
 
-    /**
-     * Creates a random dungeon with the requested dimensions.
-     *
-     * @param theRows number of rows, at least 2
-     * @param theCols number of columns, at least 2
-     */
     public Dungeon(final int theRows, final int theCols) {
         this(theRows, theCols, new Random());
     }
@@ -83,22 +74,42 @@ public class Dungeon {
 
         if (theRows < MIN_DIMENSION || theCols < MIN_DIMENSION) {
             throw new IllegalArgumentException(
-                    "The dungeon must have at least 2 rows and 2 columns.");
+                    "The dungeon needs at least two rows and columns.");
         }
 
-        Objects.requireNonNull(theRandom, "Random generator cannot be null.");
+        if ((long) theRows * theCols < 6) {
+            throw new IllegalArgumentException(
+                    "Four pillars and two endpoints require six rooms.");
+        }
+
+        Objects.requireNonNull(
+                theRandom, "Random generator cannot be null.");
 
         myMaze = new Room[theRows][theCols];
 
+        // The entrance uses index zero.
+        // The exit uses a different randomly selected index.
+        final int exitIndex =
+                1 + theRandom.nextInt(theRows * theCols - 1);
+
         for (int row = 0; row < theRows; row++) {
             for (int col = 0; col < theCols; col++) {
-                myMaze[row][col] = new Room();
+                final int roomIndex = row * theCols + col;
+                Room.Role role = Room.Role.ORDINARY;
+
+                if (roomIndex == 0) {
+                    role = Room.Role.ENTRANCE;
+                } else if (roomIndex == exitIndex) {
+                    role = Room.Role.EXIT;
+                }
+
+                myMaze[row][col] = new Room(role);
             }
         }
 
         generateMaze(theRandom);
+        placePillars(theRandom);
 
-        // Temporary starting position until entrance placement is implemented.
         myHeroRow = 0;
         myHeroCol = 0;
     }
@@ -112,7 +123,6 @@ public class Dungeon {
     private void generateMaze(final Random theRandom) {
         final boolean[][] visited =
                 new boolean[getRows()][getCols()];
-
         final Deque<int[]> path = new ArrayDeque<>();
 
         final int startRow = theRandom.nextInt(getRows());
@@ -126,9 +136,13 @@ public class Dungeon {
             final int row = current[0];
             final int col = current[1];
 
-            final List<Integer> availableDirections = new ArrayList<>();
+            final List<Integer> availableDirections =
+                    new ArrayList<>();
 
-            for (int direction = 0; direction < DIRECTIONS.length; direction++) {
+            for (int direction = 0;
+                 direction < DIRECTIONS.length;
+                 direction++) {
+
                 final int nextRow = row + ROW_CHANGE[direction];
                 final int nextCol = col + COL_CHANGE[direction];
 
@@ -150,7 +164,6 @@ public class Dungeon {
 
                 myMaze[row][col].setDoor(
                         DIRECTIONS[direction], true);
-
                 myMaze[nextRow][nextCol].setDoor(
                         DIRECTIONS[oppositeDirection], true);
 
@@ -212,8 +225,10 @@ public class Dungeon {
         final int nextCol = myHeroCol + COL_CHANGE[direction];
 
         return isInside(nextRow, nextCol)
-                && getHeroCurrentRoom().hasDoor(DIRECTIONS[direction])
-                && myMaze[nextRow][nextCol].hasDoor(DIRECTIONS[(direction + OPPOSITE_OFFSET) % NUM_DIRECTIONS]);
+                && getHeroCurrentRoom().hasDoor(
+                        DIRECTIONS[direction])
+                && myMaze[nextRow][nextCol].hasDoor(
+                        DIRECTIONS[(direction + 2) % 4]);
     }
 
     /**
@@ -301,8 +316,6 @@ public class Dungeon {
         final StringBuilder result = new StringBuilder();
 
         for (int row = 0; row < getRows(); row++) {
-
-            // North walls and doors for this row.
             for (int col = 0; col < getCols(); col++) {
                 result.append('*');
                 result.append(
@@ -310,18 +323,26 @@ public class Dungeon {
             }
             result.append("*\n");
 
-            // West walls/doors and room centers.
             for (int col = 0; col < getCols(); col++) {
-                result.append(
-                        myMaze[row][col].hasDoor("WEST") ? '|' : '*');
-                result.append(' ');
+                final Room room = myMaze[row][col];
+
+                result.append(room.hasDoor("WEST") ? '|' : '*');
+
+                if (room.isEntrance()) {
+                    result.append('i');
+                } else if (room.isExit()) {
+                    result.append('O');
+                } else if (room.hasPillar()) {
+                    result.append(
+                            room.getPillar().getType().name().charAt(0));
+                } else {
+                    result.append(' ');
+                }
             }
             result.append("*\n");
         }
 
-        // Bottom boundary.
         result.append("*".repeat(getCols() * 2 + 1));
-
         return result.toString();
     }
 }

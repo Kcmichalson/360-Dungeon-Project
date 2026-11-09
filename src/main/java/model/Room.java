@@ -2,6 +2,8 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Represents a single room in the dungeon maze.
@@ -48,6 +50,11 @@ public class Room {
      * Constructs a new Room.
      */
     public Room() {
+        this(Role.ORDINARY);
+    }
+
+    Room(final Role theRole) {
+        myRole = Objects.requireNonNull(theRole);
         myHasPit = false;
         myIsExit = false;
         myDoors = new boolean[NUM_DOORS];
@@ -122,13 +129,18 @@ public class Room {
         return !myPotions.isEmpty();
     }
 
-    /**
-     * Cuts all potions from the room.
-     *
-     * @return a list of the collected potions
-     */
+    public void addPotion(final Potion thePotion) {
+        if (!canPlaceContents()) {
+            throw new IllegalStateException(
+                    "Cannot place potions in the entrance or exit.");
+        }
+
+        myPotions.add(thePotion);
+    }
+
     public List<Potion> takePotions() {
-        final List<Potion> collectedPotions = new ArrayList<>(myPotions);
+        final List<Potion> collectedPotions =
+                new ArrayList<>(myPotions);
         myPotions.clear();
         return collectedPotions;
     }
@@ -143,46 +155,24 @@ public class Room {
     }
 
     /**
-     * Cuts the pillar from the room.
-     *
-     * @return the collected pillar
+     * Returns the pillar without removing it.
      */
-    public Pillar takePillar() {
-        final Pillar temp = myPillar;
-        myPillar = null;
-        return temp;
+    public Pillar getPillar() {
+        return myPillar;
     }
 
-    /**
-     * Creates a door in a specific direction.
-     *
-     * @param theDirection the direction
-     * @param theExists true if the door should exist
-     */
-    public void setDoor(final String theDirection, final boolean theExists) {
-        switch (theDirection.toUpperCase()) {
-            case "NORTH" -> myDoors[NORTH_INDEX] = theExists;
-            case "EAST"  -> myDoors[EAST_INDEX] = theExists;
-            case "SOUTH" -> myDoors[SOUTH_INDEX] = theExists;
-            case "WEST"  -> myDoors[WEST_INDEX] = theExists;
-        }
-    }
-
-    /**
-     * Adds a potion to the room.
-     *
-     * @param thePotion the potion to add
-     */
-    public void addPotion(final Potion thePotion) {
-        myPotions.add(thePotion);
-    }
-
-    /**
-     * Adds a pillar to the room.
-     *
-     * @param thePillar the pillar to place in the room
-     */
     public void setPillar(final Pillar thePillar) {
+        if (thePillar != null && !canPlaceContents()) {
+            throw new IllegalStateException(
+                    "Cannot place pillars in the entrance or exit.");
+        }
+
         myPillar = thePillar;
+    }
+
+    public Pillar takePillar() {
+        final Pillar collectedPillar = myPillar;
+        myPillar = null;
+        return collectedPillar;
     }
 }
