@@ -77,6 +77,18 @@ public class Room {
         return myMonster;
     }
 
+    /**
+     * Assigns a monster or removes it when passed null.
+     */
+    public void setMonster(final Monster theMonster) {
+        if (theMonster != null && !canPlaceContents()) {
+            throw new IllegalStateException(
+                    "Cannot place monsters in the entrance or exit.");
+        }
+
+        myMonster = theMonster;
+    }
+
     public boolean hasPotions() {
         return !myPotions.isEmpty();
     }
@@ -93,6 +105,7 @@ public class Room {
     public List<Potion> takePotions() {
         final List<Potion> collectedPotions =
                 new ArrayList<>(myPotions);
+
         myPotions.clear();
         return collectedPotions;
     }
@@ -101,9 +114,6 @@ public class Room {
         return myPillar != null;
     }
 
-    /**
-     * Returns the pillar without removing it.
-     */
     public Pillar getPillar() {
         return myPillar;
     }
