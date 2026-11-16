@@ -13,6 +13,7 @@ import java.util.Random;
 
 public class Dungeon {
 
+    private static final double CONTENT_CHANCE = 0.10;
     private static final double MONSTER_CHANCE = 0.30;
 
     private static final String[] DIRECTIONS = {
@@ -34,9 +35,6 @@ public class Dungeon {
         this(theRows, theCols, new Random());
     }
 
-    /**
-     * Creates the maze, entrance, exit, pillars, and monsters.
-     */
     public Dungeon(final int theRows, final int theCols,
                    final Random theRandom) {
 
@@ -75,6 +73,7 @@ public class Dungeon {
 
         generateMaze(theRandom);
         placePillars(theRandom);
+        placePotionsAndPits(theRandom);
         placeMonsters(theRandom);
 
         myHeroRow = 0;
@@ -82,8 +81,34 @@ public class Dungeon {
     }
 
     /**
-     * Places an Ogre in every pillar room.
-     * Other ordinary rooms independently have a 30% monster chance.
+     * Makes three independent rolls for each remaining room.
+     * Entrance, exit, and pillar rooms are excluded.
+     */
+    private void placePotionsAndPits(final Random theRandom) {
+        for (final Room[] row : myMaze) {
+            for (final Room room : row) {
+                if (room.canPlaceContents() && !room.hasPillar()) {
+
+                    if (theRandom.nextDouble() < CONTENT_CHANCE) {
+                        room.addPotion(
+                                new Potion(Potion.Type.HEALING));
+                    }
+
+                    if (theRandom.nextDouble() < CONTENT_CHANCE) {
+                        room.addPotion(
+                                new Potion(Potion.Type.VISION));
+                    }
+
+                    room.setPit(
+                            theRandom.nextDouble() < CONTENT_CHANCE);
+                }
+            }
+        }
+    }
+
+    /**
+     * Gives each pillar an Ogre guard.
+     * Other ordinary rooms have a 30% monster chance.
      */
     private void placeMonsters(final Random theRandom) {
         final MonsterFactory monsterFactory = new MonsterFactory();
