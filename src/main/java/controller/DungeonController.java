@@ -1,8 +1,12 @@
 package controller;
 
+import java.util.List;
 import java.util.Scanner;
+import model.BattleLogic;
 import model.Dungeon;
+import model.HealingPotion;
 import model.Hero;
+import model.Monster;
 import model.Pillar;
 import model.Potion;
 import model.Room;
@@ -12,7 +16,7 @@ import view.DungeonView;
  * Controls main game loop user input and interactions between model and view.
  *
  * @author Kevin Michalson
- * @version 11/08/2026
+ * @version 11/15/2026
  */
 public class DungeonController {
 
@@ -78,7 +82,7 @@ public class DungeonController {
     private void playTurnLoop(final Scanner theInput) {
         myDungeonView.displayMessage("Welcome to the Dungeon!");
         myDungeonView.displayMessage("Find the 4 pillars and reach the exit to win.");
-        myDungeonView.displayMessage("Controls: NORTH, EAST, SOUTH, WEST to move. V to view full map.");
+        myDungeonView.displayMessage("Controls: NORTH, EAST, SOUTH, WEST to move. V to view full map. I for Inventory.");
 
         boolean gameOver = false;
 
@@ -88,6 +92,8 @@ public class DungeonController {
 
             if ("V".equals(command)) {
                 myDungeonView.displayMessage(myDungeon.toString());
+            } else if ("I".equals(command)) {
+                handleInventory();
             } else if ("NORTH".equals(command) || "EAST".equals(command)
                     || "SOUTH".equals(command) || "WEST".equals(command)) {
 
@@ -121,9 +127,55 @@ public class DungeonController {
             final Room currentRoom = myDungeon.getHeroCurrentRoom();
 
             processRoomItems(currentRoom);
+            processCombat(currentRoom);
+
             myDungeonView.displayRoom(currentRoom);
         } else {
             myDungeonView.displayError("Invalid move: No door in that direction.");
+        }
+    }
+
+    /**
+     * Trigger combat if the room contains a monster.
+     *
+     * @param theRoom the room the hero just entered
+     */
+    private void processCombat(final Room theRoom) {
+        final Monster currentEnemy = theRoom.getMonster();
+
+        if (currentEnemy != null && currentEnemy.getHitPoints() > 0) {
+            myDungeonView.displayMessage("\n*** ENCOUNTER! A " + currentEnemy.getName() + " blocks your path! ***");
+
+            final BattleLogic battle = new BattleLogic(myHero, currentEnemy);
+            battle.battleLoop();
+
+            if (myHero.getHitPoints() > 0) {
+                myDungeonView.displayMessage("You defeated the " + currentEnemy.getName() + "!");
+                theRoom.setMonster(null); // Clear the monster so it doesn't fight again
+            }
+        }
+    }
+
+    /**
+     * Attempt to use a Healing Potion from the inventory.
+     */
+    private void handleInventory() {
+        boolean healed = false;
+        // Assuming Hero has a getInventory() method returning a List of Collectibles/Potions
+        final List<?> inventory = myHero.getInventory();
+
+        for (int i = 0; i < inventory.size(); i++) {
+            if (inventory.get(i) instanceof HealingPotion) {
+                final HealingPotion potion = (HealingPotion) inventory.get(i);
+                myHero.usePotion(potion);
+                myDungeonView.displayMessage("You drank a " + potion.getName() + "! Current HP: " + myHero.getHitPoints());
+                healed = true;
+                break; // Only drink one per turn
+            }
+        }
+
+        if (!healed) {
+            myDungeonView.displayMessage("You don't have any Healing Potions in your inventory!");
         }
     }
 
@@ -133,10 +185,12 @@ public class DungeonController {
      * @param theRoom the room the hero just entered
      */
     private void processRoomItems(final Room theRoom) {
-        if (theRoom.hasPotion()) {
-            final Potion potion = theRoom.takePotion();
-            myHero.addCollectible(potion);
-            myDungeonView.displayMessage("You picked up a " + potion.getName() + "!");
+        if (theRoom.hasPotions()) {
+            final List<Potion> potions = theRoom.takePotions();
+            for (final Potion potion : potions) {
+                myHero.addCollectible(potion);
+                myDungeonView.displayMessage("You picked up a " + potion.getName() + "!");
+            }
         }
 
         if (theRoom.hasPillar()) {

@@ -1,30 +1,23 @@
 package model;
 
-import java.util.Objects;
-
-public class Pillar {
+// Add the 'implements Collectible' to fix the hero pickup error
+public class Pillar implements Collectible {
 
     public enum Type {
-        ABSTRACTION,
         ENCAPSULATION,
+        ABSTRACTION,
         INHERITANCE,
         POLYMORPHISM
     }
 
     private final Type myType;
 
-    /**
-     * Preserves compatibility with existing tests using new Pillar().
-     */
-    public Pillar() {
-        this(Type.ABSTRACTION);
-    }
-
     public Pillar(final Type theType) {
-        myType = Objects.requireNonNull(theType);
+        myType = theType;
     }
 
-    public Type getType() {
-        return myType;
+    // Add this method to fix the getName() error in the controller
+    public String getName() {
+        return myType.toString() + " Pillar";
     }
 }

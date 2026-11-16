@@ -43,7 +43,7 @@ public abstract class Hero extends DungeonCharacter {
         myBlockChance = theBlock;
         myInventory = new ArrayList<>();
         myPillarsFound = 0;
-        isPlayer = true;
+        setPlayer(true);
     }
 
     /**
@@ -94,5 +94,8 @@ public abstract class Hero extends DungeonCharacter {
             blocked = true;
         }
         return blocked;
+    }
+    public java.util.List<model.Collectible> getInventory() {
+        return myInventory;
     }
 }

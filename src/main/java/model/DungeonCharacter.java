@@ -58,4 +58,8 @@ public abstract class DungeonCharacter {
             target.takeDamage(attackMod.nextInt(attackMin,attackMax));
         }
     }
+
+    protected void setPlayer(boolean thePlayerStatus) {
+        isPlayer = thePlayerStatus;
+    }
 }
