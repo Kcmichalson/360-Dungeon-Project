@@ -1,5 +1,7 @@
 package model;
 
+import factory.MonsterFactory;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +12,8 @@ import java.util.Objects;
 import java.util.Random;
 
 public class Dungeon {
+
+    private static final double MONSTER_CHANCE = 0.30;
 
     private static final String[] DIRECTIONS = {
         "NORTH", "EAST", "SOUTH", "WEST"
@@ -31,8 +35,7 @@ public class Dungeon {
     }
 
     /**
-     * Creates a connected maze, one entrance, one exit,
-     * and all four distinct pillars.
+     * Creates the maze, entrance, exit, pillars, and monsters.
      */
     public Dungeon(final int theRows, final int theCols,
                    final Random theRandom) {
@@ -52,8 +55,6 @@ public class Dungeon {
 
         myMaze = new Room[theRows][theCols];
 
-        // The entrance uses index zero.
-        // The exit uses a different randomly selected index.
         final int exitIndex =
                 1 + theRandom.nextInt(theRows * theCols - 1);
 
@@ -74,13 +75,37 @@ public class Dungeon {
 
         generateMaze(theRandom);
         placePillars(theRandom);
+        placeMonsters(theRandom);
 
         myHeroRow = 0;
         myHeroCol = 0;
     }
 
     /**
-     * Places each pillar in a different ordinary room.
+     * Places an Ogre in every pillar room.
+     * Other ordinary rooms independently have a 30% monster chance.
+     */
+    private void placeMonsters(final Random theRandom) {
+        final MonsterFactory monsterFactory = new MonsterFactory();
+
+        for (final Room[] row : myMaze) {
+            for (final Room room : row) {
+                if (room.canPlaceContents()) {
+                    if (room.hasPillar()) {
+                        room.setMonster(
+                                monsterFactory.createPillarGuard());
+                    } else if (theRandom.nextDouble() < MONSTER_CHANCE) {
+                        room.setMonster(
+                                monsterFactory.createOrdinaryMonster(
+                                        theRandom));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Places all four pillars in different ordinary rooms.
      */
     private void placePillars(final Random theRandom) {
         final List<Room> eligibleRooms = new ArrayList<>();
@@ -96,6 +121,7 @@ public class Dungeon {
         Collections.shuffle(eligibleRooms, theRandom);
 
         int index = 0;
+
         for (final Pillar.Type type : Pillar.Type.values()) {
             eligibleRooms.get(index).setPillar(new Pillar(type));
             index++;
@@ -108,6 +134,7 @@ public class Dungeon {
     private void generateMaze(final Random theRandom) {
         final boolean[][] visited =
                 new boolean[getRows()][getCols()];
+
         final Deque<int[]> path = new ArrayDeque<>();
 
         final int startRow = theRandom.nextInt(getRows());
@@ -149,6 +176,7 @@ public class Dungeon {
 
                 myMaze[row][col].setDoor(
                         DIRECTIONS[direction], true);
+
                 myMaze[nextRow][nextCol].setDoor(
                         DIRECTIONS[oppositeDirection], true);
 
@@ -204,6 +232,7 @@ public class Dungeon {
     public void move(final String theDirection) {
         if (isValidDoor(theDirection)) {
             final int direction = getDirectionIndex(theDirection);
+
             myHeroRow += ROW_CHANGE[direction];
             myHeroCol += COL_CHANGE[direction];
         }
@@ -247,6 +276,7 @@ public class Dungeon {
                 result.append(
                         myMaze[row][col].hasDoor("NORTH") ? '-' : '*');
             }
+
             result.append("*\n");
 
             for (int col = 0; col < getCols(); col++) {
@@ -265,6 +295,7 @@ public class Dungeon {
                     result.append(' ');
                 }
             }
+
             result.append("*\n");
         }
 
