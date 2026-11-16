@@ -90,28 +90,26 @@ public class DungeonController {
             myDungeonView.displayMessage("Enter your move:");
             final String command = theInput.nextLine().trim().toUpperCase();
 
-            if ("V".equals(command)) {
-                myDungeonView.displayMessage(myDungeon.toString());
-            } else if ("I".equals(command)) {
-                handleInventory();
-            } else if ("NORTH".equals(command) || "EAST".equals(command)
-                    || "SOUTH".equals(command) || "WEST".equals(command)) {
+            switch (command) {
+                case "V" -> myDungeonView.displayMessage(myDungeon.toString());
+                case "I" -> handleInventory();
+                case "NORTH", "EAST", "SOUTH", "WEST" -> {
 
-                moveHero(command);
+                    moveHero(command);
 
-                if (myHero.getHitPoints() <= 0) {
-                    myDungeonView.displayMessage("You have died. You lose!");
-                    gameOver = true;
-                } else if (myDungeon.getHeroCurrentRoom().isExit()) {
-                    if (myHero.getPillarsFound() == REQUIRED_PILLARS) {
-                        myDungeonView.displayMessage("You found all 4 pillars and escaped. You win!");
+                    if (myHero.getHitPoints() <= 0) {
+                        myDungeonView.displayMessage("You have died. You lose!");
                         gameOver = true;
-                    } else {
-                        myDungeonView.displayMessage("You found the exit, but you need 4 pillars to leave!");
+                    } else if (myDungeon.getHeroCurrentRoom().isExit()) {
+                        if (myHero.getPillarsFound() == REQUIRED_PILLARS) {
+                            myDungeonView.displayMessage("You found all 4 pillars and escaped. You win!");
+                            gameOver = true;
+                        } else {
+                            myDungeonView.displayMessage("You found the exit, but you need 4 pillars to leave!");
+                        }
                     }
                 }
-            } else {
-                myDungeonView.displayMessage("Invalid command.");
+                default -> myDungeonView.displayMessage("Invalid command.");
             }
         }
     }
@@ -130,6 +128,14 @@ public class DungeonController {
             processCombat(currentRoom);
 
             myDungeonView.displayRoom(currentRoom);
+            System.out.print("You are in a room. Doors lead: ");
+
+            if (currentRoom.hasDoor("NORTH")) System.out.print("NORTH ");
+            if (currentRoom.hasDoor("EAST")) System.out.print("EAST ");
+            if (currentRoom.hasDoor("SOUTH")) System.out.print("SOUTH ");
+            if (currentRoom.hasDoor("WEST")) System.out.print("WEST ");
+
+            System.out.println();
         } else {
             myDungeonView.displayError("Invalid move: No door in that direction.");
         }
@@ -164,9 +170,8 @@ public class DungeonController {
         // Assuming Hero has a getInventory() method returning a List of Collectibles/Potions
         final List<?> inventory = myHero.getInventory();
 
-        for (int i = 0; i < inventory.size(); i++) {
-            if (inventory.get(i) instanceof HealingPotion) {
-                final HealingPotion potion = (HealingPotion) inventory.get(i);
+        for (Object o : inventory) {
+            if (o instanceof HealingPotion potion) {
                 myHero.usePotion(potion);
                 myDungeonView.displayMessage("You drank a " + potion.getName() + "! Current HP: " + myHero.getHitPoints());
                 healed = true;
@@ -202,6 +207,7 @@ public class DungeonController {
         if (theRoom.hasPit()) {
             myHero.takeDamage(PIT_DAMAGE);
             myDungeonView.displayMessage("Watch out! You fell into a pit and took " + PIT_DAMAGE + " damage.");
+            myHero.takeDamage(10);
         }
     }
 }

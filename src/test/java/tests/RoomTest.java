@@ -47,7 +47,7 @@ public class RoomTest {
 
     @Test
     public void testTakePillarClearsRoom() {
-        testRoom.setPillar(new Pillar());
+        testRoom.setPillar(new Pillar(Pillar.Type.ENCAPSULATION));
         assertTrue(testRoom.hasPillar(), "Room should initially have a pillar.");
 
         Pillar collected = testRoom.takePillar();

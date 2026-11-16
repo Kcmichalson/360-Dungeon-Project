@@ -8,16 +8,20 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Random;
 
 public class Dungeon {
+
+    private static final int DEFAULT_ROWS = 5;
+    private static final int DEFAULT_COLS = 5;
+    private static final int MIN_DIMENSION = 2;
+    private static final int MIN_ROOMS = 6;
 
     private static final double CONTENT_CHANCE = 0.10;
     private static final double MONSTER_CHANCE = 0.30;
 
     private static final String[] DIRECTIONS = {
-        "NORTH", "EAST", "SOUTH", "WEST"
+            "NORTH", "EAST", "SOUTH", "WEST"
     };
 
     private static final int[] ROW_CHANGE = {-1, 0, 1, 0};
@@ -28,33 +32,32 @@ public class Dungeon {
     private int myHeroCol;
 
     public Dungeon() {
-        this(5, 5);
+        this(DEFAULT_ROWS, DEFAULT_COLS);
     }
 
     public Dungeon(final int theRows, final int theCols) {
         this(theRows, theCols, new Random());
     }
 
-    public Dungeon(final int theRows, final int theCols,
-                   final Random theRandom) {
+    public Dungeon(final int theRows, final int theCols, final Random theRandom) {
 
-        if (theRows < 2 || theCols < 2) {
+        if (theRows < MIN_DIMENSION || theCols < MIN_DIMENSION) {
             throw new IllegalArgumentException(
                     "The dungeon needs at least two rows and columns.");
         }
 
-        if ((long) theRows * theCols < 6) {
+        if ((long) theRows * theCols < MIN_ROOMS) {
             throw new IllegalArgumentException(
                     "Four pillars and two endpoints require six rooms.");
         }
 
-        Objects.requireNonNull(
-                theRandom, "Random generator cannot be null.");
+        if (theRandom == null) {
+            throw new IllegalArgumentException("Random generator cannot be null.");
+        }
 
         myMaze = new Room[theRows][theCols];
 
-        final int exitIndex =
-                1 + theRandom.nextInt(theRows * theCols - 1);
+        final int exitIndex = 1 + theRandom.nextInt(theRows * theCols - 1);
 
         for (int row = 0; row < theRows; row++) {
             for (int col = 0; col < theCols; col++) {

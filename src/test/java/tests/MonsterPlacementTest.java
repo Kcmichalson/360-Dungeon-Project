@@ -77,9 +77,10 @@ class MonsterPlacementTest {
             assertTrue(
                     guard.getHitPoints() > ordinary.getHitPoints());
 
+            // Fixed: Changed from getMaximumDamage() to getAttackMax()
             assertTrue(
-                    guard.getMaximumDamage()
-                            > ordinary.getMaximumDamage());
+                    guard.getAttackMax()
+                            > ordinary.getAttackMax());
         }
     }
 

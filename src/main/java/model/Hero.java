@@ -87,13 +87,9 @@ public abstract class Hero extends DungeonCharacter {
     //Note: blocking changed to return a boolean to fit battle logic better
     public boolean blockAttempt() {
         final Random randomBlock = new Random();
-        boolean blocked = false;
 
         // I multiply it by 100 here so it scales correctly with the whole-number blockChance
-        if (randomBlock.nextDouble() * MAX_PERCENTAGE > myBlockChance) {
-            blocked = true;
-        }
-        return blocked;
+        return randomBlock.nextDouble() * MAX_PERCENTAGE > myBlockChance;
     }
     public java.util.List<model.Collectible> getInventory() {
         return myInventory;

@@ -1,7 +1,5 @@
 package model;
 
-import java.util.Objects;
-
 public class Potion implements Collectible {
 
     public enum Type {
@@ -9,21 +7,27 @@ public class Potion implements Collectible {
         VISION
     }
 
-    public String name;
-    private Type myType;
+    private final String myName;
+    private final Type myType;
 
     public Potion() {
         this(Type.HEALING);
     }
 
     public Potion(final Type theType) {
-        myType = Objects.requireNonNull(theType);
-        name = theType.toString() + " Potion";
+        if (theType == null) {
+            throw new IllegalArgumentException("Potion type cannot be null.");
+        }
+        myType = theType;
+        myName = theType + " Potion";
     }
 
-    public Potion(String potionName) {
-        name = potionName;
-        myType = Type.HEALING; // Default fallback for string constructor
+    public Potion(final String thePotionName) {
+        if (thePotionName == null || thePotionName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Potion name cannot be null or empty.");
+        }
+        myName = thePotionName;
+        myType = Type.HEALING;
     }
 
     public Type getType() {
@@ -31,7 +35,7 @@ public class Potion implements Collectible {
     }
 
     public String getName() {
-        return name;
+        return myName;
     }
 
     public void use() { }

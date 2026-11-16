@@ -17,9 +17,9 @@ class PlacementTest {
     @Test
     void placesOneEntranceOneExitAndFourDistinctPillars() {
         final int[][] sizes = {
-            {2, 3},
-            {3, 7},
-            {5, 5}
+                {2, 3},
+                {3, 7},
+                {5, 5}
         };
 
         for (final int[] size : sizes) {
@@ -62,7 +62,7 @@ class PlacementTest {
                             pillars++;
                             assertTrue(room.canPlaceContents());
                             assertTrue(found.add(
-                                    room.getPillar().getType()),
+                                            room.getPillar().getType()),
                                     "Duplicate pillar type");
                         }
                     }
@@ -90,8 +90,9 @@ class PlacementTest {
                     assertThrows(IllegalStateException.class,
                             () -> room.addPotion(new Potion()));
 
+                    // Fixed: Provided the required enum argument to the Pillar constructor
                     assertThrows(IllegalStateException.class,
-                            () -> room.setPillar(new Pillar()));
+                            () -> room.setPillar(new Pillar(Pillar.Type.ENCAPSULATION)));
 
                     assertFalse(room.hasPotions());
                     assertFalse(room.hasPillar());

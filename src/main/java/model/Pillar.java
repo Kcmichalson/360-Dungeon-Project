@@ -1,6 +1,5 @@
 package model;
 
-// Add the 'implements Collectible' to fix the hero pickup error
 public class Pillar implements Collectible {
 
     public enum Type {
@@ -16,8 +15,11 @@ public class Pillar implements Collectible {
         myType = theType;
     }
 
-    // Add this method to fix the getName() error in the controller
     public String getName() {
         return myType.toString() + " Pillar";
+    }
+
+    public Type getType() {
+        return myType;
     }
 }

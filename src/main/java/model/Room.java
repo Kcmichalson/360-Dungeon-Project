@@ -13,6 +13,13 @@ import java.util.Objects;
  */
 public class Room {
 
+    /** The role of the room (entrance, exit, or ordinary). */
+    public enum Role {
+        ENTRANCE,
+        EXIT,
+        ORDINARY
+    }
+
     /** Number of possible doors in a room. */
     private static final int NUM_DOORS = 4;
 
@@ -28,11 +35,11 @@ public class Room {
     /** Index for the West door. */
     private static final int WEST_INDEX = 3;
 
+    /** The specific role assigned to this room. */
+    private final Role myRole;
+
     /** Does the room contain a pit trap? */
     private boolean myHasPit;
-
-    /** Does the room have the dungeon exit? */
-    private boolean myIsExit;
 
     /** Array representing where the doors of a room are. */
     private final boolean[] myDoors;
@@ -56,11 +63,14 @@ public class Room {
     Room(final Role theRole) {
         myRole = Objects.requireNonNull(theRole);
         myHasPit = false;
-        myIsExit = false;
         myDoors = new boolean[NUM_DOORS];
         myMonster = null;
         myPotions = new ArrayList<>();
         myPillar = null;
+    }
+
+    public boolean canPlaceContents() {
+        return myRole == Role.ORDINARY;
     }
 
     /**
@@ -81,6 +91,17 @@ public class Room {
             case "WEST"  -> myDoors[WEST_INDEX];
             default      -> false;
         };
+    }
+
+    public void setDoor(final String theDir, final boolean theIsOpen) {
+        if (theDir != null) {
+            switch (theDir.toUpperCase()) {
+                case "NORTH" -> myDoors[NORTH_INDEX] = theIsOpen;
+                case "EAST"  -> myDoors[EAST_INDEX] = theIsOpen;
+                case "SOUTH" -> myDoors[SOUTH_INDEX] = theIsOpen;
+                case "WEST"  -> myDoors[WEST_INDEX] = theIsOpen;
+            }
+        }
     }
 
     /**
@@ -106,7 +127,11 @@ public class Room {
      * @return true if the room is the exit
      */
     public boolean isExit() {
-        return myIsExit;
+        return myRole == Role.EXIT;
+    }
+
+    public boolean isEntrance() {
+        return myRole == Role.ENTRANCE;
     }
 
     /**

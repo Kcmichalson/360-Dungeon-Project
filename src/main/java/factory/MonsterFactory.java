@@ -1,6 +1,5 @@
 package factory;
 
-import java.util.Objects;
 import java.util.Random;
 
 import model.Gremlin;
@@ -11,7 +10,9 @@ import model.Skeleton;
 public class MonsterFactory {
 
     public Monster createOrdinaryMonster(final Random theRandom) {
-        Objects.requireNonNull(theRandom);
+        if (theRandom == null) {
+            throw new IllegalArgumentException("Random generator cannot be null.");
+        }
 
         return theRandom.nextBoolean()
                 ? new Gremlin()

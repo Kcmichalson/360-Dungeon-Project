@@ -1,5 +1,7 @@
-package model;
+package tests;
 
+import model.Dungeon;
+import model.Room;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayDeque;
@@ -263,11 +265,12 @@ class DungeonTest {
         dungeon.getRoom(1, 1).setDoor("NORTH", true);
 
         final String expected =
-                "*****\n"
-                + "* | *\n"
-                + "***-*\n"
-                + "* * *\n"
-                + "*****";
+                """
+                        *****
+                        * | *
+                        ***-*
+                        * * *
+                        *****""";
 
         assertEquals(expected, dungeon.toString());
     }

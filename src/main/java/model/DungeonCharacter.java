@@ -1,30 +1,41 @@
 package model;
+
 import java.util.Random;
 
 public abstract class DungeonCharacter {
 
     private int myHitPoints;
-    private int attackSpeed;
-    private int attackMin;
-    private int attackMax;
-    private String characterName;
-    private double chanceToHit;
-    private boolean isPlayer;
+    private int myAttackSpeed;
+    private int myAttackMin;
+    private int myAttackMax;
+    private String myCharacterName;
+    private double myChanceToHit;
+    private boolean myIsPlayer;
 
     protected DungeonCharacter() {
     }
 
     protected DungeonCharacter(final int theHitPoints) {
+        if (theHitPoints < 0) {
+            throw new IllegalArgumentException("Hit points cannot be negative.");
+        }
         myHitPoints = theHitPoints;
     }
 
-    protected DungeonCharacter(int hitPoints, int speed, int attackMinimum, int attackMaximum, String name, double hitChance) {
-        myHitPoints = hitPoints;
-        attackSpeed = speed;
-        attackMin = attackMinimum;
-        attackMax = attackMaximum;
-        characterName = name;
-        chanceToHit = hitChance;
+    protected DungeonCharacter(final int theHitPoints, final int theSpeed, final int theAttackMinimum, final int theAttackMaximum, final String theName, final double theHitChance) {
+        if (theHitPoints < 0 || theSpeed < 0 || theAttackMinimum < 0 || theAttackMaximum < 0 || theHitChance < 0) {
+            throw new IllegalArgumentException("Stats cannot be negative.");
+        }
+        if (theName == null || theName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty.");
+        }
+
+        myHitPoints = theHitPoints;
+        myAttackSpeed = theSpeed;
+        myAttackMin = theAttackMinimum;
+        myAttackMax = theAttackMaximum;
+        myCharacterName = theName;
+        myChanceToHit = theHitChance;
     }
 
     public int getHitPoints() {
@@ -32,34 +43,51 @@ public abstract class DungeonCharacter {
     }
 
     public int getAttackSpeed() {
-        return attackSpeed;
+        return myAttackSpeed;
+    }
+
+    // Added this getter to fix the MonsterPlacementTest error
+    public int getAttackMax() {
+        return myAttackMax;
     }
 
     public String getName() {
-        return characterName;
+        return myCharacterName;
     }
 
     public boolean isPlayer() {
-        return isPlayer;
+        return myIsPlayer;
     }
 
     public void takeDamage(final int theAmount) {
+        if (theAmount < 0) {
+            throw new IllegalArgumentException("Damage amount cannot be negative.");
+        }
         myHitPoints -= theAmount;
         if (myHitPoints < 0) {
             myHitPoints = 0;
         }
     }
 
-    public void attack(DungeonCharacter target) {
-        //Used for attack chance and attack damage
-        Random attackMod = new Random();
+    public void attack(final DungeonCharacter theTarget) {
+        if (theTarget == null) {
+            throw new IllegalArgumentException("Target cannot be null.");
+        }
 
-        if (attackMod.nextInt() < chanceToHit) {
-            target.takeDamage(attackMod.nextInt(attackMin,attackMax));
+        final Random attackMod = new Random();
+        if (attackMod.nextDouble() < myChanceToHit) {
+            theTarget.takeDamage(attackMod.nextInt(myAttackMin, myAttackMax));
         }
     }
 
-    protected void setPlayer(boolean thePlayerStatus) {
-        isPlayer = thePlayerStatus;
+    protected void setPlayer(final boolean thePlayerStatus) {
+        myIsPlayer = thePlayerStatus;
+    }
+
+    public void heal(final int theAmount) {
+        if (theAmount < 0) {
+            throw new IllegalArgumentException("Heal amount cannot be negative.");
+        }
+        myHitPoints += theAmount;
     }
 }
