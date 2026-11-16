@@ -5,21 +5,50 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Represents a single room in the dungeon maze.
+ *
+ * @author Kevin Michalson
+ * @version 11/08/2026
+ */
 public class Room {
 
-    enum Role {
-        ORDINARY,
-        ENTRANCE,
-        EXIT
-    }
+    /** Number of possible doors in a room. */
+    private static final int NUM_DOORS = 4;
 
-    private final Role myRole;
+    /** Index for the North door. */
+    private static final int NORTH_INDEX = 0;
+
+    /** Index for the East door. */
+    private static final int EAST_INDEX = 1;
+
+    /** Index for the South door. */
+    private static final int SOUTH_INDEX = 2;
+
+    /** Index for the West door. */
+    private static final int WEST_INDEX = 3;
+
+    /** Does the room contain a pit trap? */
     private boolean myHasPit;
+
+    /** Does the room have the dungeon exit? */
+    private boolean myIsExit;
+
+    /** Array representing where the doors of a room are. */
     private final boolean[] myDoors;
+
+    /** The monster currently in the room. */
     private Monster myMonster;
+
+    /** The potions currently in the room. */
     private final List<Potion> myPotions;
+
+    /** The pillar currently in the room. */
     private Pillar myPillar;
 
+    /**
+     * Constructs a new Room.
+     */
     public Room() {
         this(Role.ORDINARY);
     }
@@ -27,48 +56,38 @@ public class Room {
     Room(final Role theRole) {
         myRole = Objects.requireNonNull(theRole);
         myHasPit = false;
-        myDoors = new boolean[4];
+        myIsExit = false;
+        myDoors = new boolean[NUM_DOORS];
         myMonster = null;
         myPotions = new ArrayList<>();
         myPillar = null;
     }
 
-    public boolean isEntrance() {
-        return myRole == Role.ENTRANCE;
-    }
-
-    public boolean isExit() {
-        return myRole == Role.EXIT;
-    }
-
-    public boolean canPlaceContents() {
-        return myRole == Role.ORDINARY;
-    }
-
-    public boolean hasDoor(final String theDirection) {
-        if (theDirection == null) {
+    /**
+     * Checks if the room has a door in the given direction.
+     *
+     * @param theDir the direction to check
+     * @return true if a door exists, false otherwise
+     */
+    public boolean hasDoor(final String theDir) {
+        if (theDir == null) {
             return false;
         }
 
-        return switch (theDirection.toUpperCase(Locale.ROOT)) {
-            case "NORTH" -> myDoors[0];
-            case "EAST" -> myDoors[1];
-            case "SOUTH" -> myDoors[2];
-            case "WEST" -> myDoors[3];
-            default -> false;
+        return switch (theDir.toUpperCase()) {
+            case "NORTH" -> myDoors[NORTH_INDEX];
+            case "EAST"  -> myDoors[EAST_INDEX];
+            case "SOUTH" -> myDoors[SOUTH_INDEX];
+            case "WEST"  -> myDoors[WEST_INDEX];
+            default      -> false;
         };
     }
 
-    public void setDoor(final String theDirection,
-                        final boolean theExists) {
-        switch (theDirection.toUpperCase(Locale.ROOT)) {
-            case "NORTH" -> myDoors[0] = theExists;
-            case "EAST" -> myDoors[1] = theExists;
-            case "SOUTH" -> myDoors[2] = theExists;
-            case "WEST" -> myDoors[3] = theExists;
-        }
-    }
-
+    /**
+     * Checks if the room has a pit.
+     *
+     * @return true if the room has a pit
+     */
     public boolean hasPit() {
         return myHasPit;
     }
@@ -78,10 +97,23 @@ public class Room {
             throw new IllegalStateException(
                     "Cannot place a pit in the entrance or exit.");
         }
-
         myHasPit = theHasPit;
     }
 
+    /**
+     * Checks if the room has the dungeon exit.
+     *
+     * @return true if the room is the exit
+     */
+    public boolean isExit() {
+        return myIsExit;
+    }
+
+    /**
+     * Gets the monster in the room.
+     *
+     * @return the monster, or null if none exists
+     */
     public Monster getMonster() {
         return myMonster;
     }
@@ -91,10 +123,24 @@ public class Room {
             throw new IllegalStateException(
                     "Cannot place monsters in the entrance or exit.");
         }
-
         myMonster = theMonster;
     }
 
+    /**
+     * Returns a string representation of the room.
+     *
+     * @return the string representation
+     */
+    @Override
+    public String toString() {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    /**
+     * Checks if the room contains potions.
+     *
+     * @return true if there is at least one potion
+     */
     public boolean hasPotions() {
         return !myPotions.isEmpty();
     }
@@ -116,6 +162,11 @@ public class Room {
         return collectedPotions;
     }
 
+    /**
+     * Checks if the room has a pillar.
+     *
+     * @return true if a pillar is present
+     */
     public boolean hasPillar() {
         return myPillar != null;
     }
@@ -137,10 +188,5 @@ public class Room {
         final Pillar collectedPillar = myPillar;
         myPillar = null;
         return collectedPillar;
-    }
-
-    @Override
-    public String toString() {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

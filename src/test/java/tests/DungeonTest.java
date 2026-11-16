@@ -18,6 +18,9 @@ class DungeonTest {
         assertEquals(5, dungeon.getCols());
     }
 
+    /**
+     * Tests moving North.
+     */
     @Test
     void createsRequestedRectangleWithEveryRoomInitialized() {
         final Dungeon dungeon = new Dungeon(4, 7, new Random(1));
@@ -191,6 +194,9 @@ class DungeonTest {
         assertEquals(0, dungeon.getHeroCol());
     }
 
+    /**
+     * Tests that movement code ignores casing. For ease of development later.
+     */
     @Test
     void heroCanMoveThroughDoorAndReturn() {
         final Dungeon dungeon = new Dungeon(5, 7, new Random(4));
