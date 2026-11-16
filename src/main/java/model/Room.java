@@ -73,13 +73,19 @@ public class Room {
         return myHasPit;
     }
 
+    public void setPit(final boolean theHasPit) {
+        if (theHasPit && !canPlaceContents()) {
+            throw new IllegalStateException(
+                    "Cannot place a pit in the entrance or exit.");
+        }
+
+        myHasPit = theHasPit;
+    }
+
     public Monster getMonster() {
         return myMonster;
     }
 
-    /**
-     * Assigns a monster or removes it when passed null.
-     */
     public void setMonster(final Monster theMonster) {
         if (theMonster != null && !canPlaceContents()) {
             throw new IllegalStateException(
