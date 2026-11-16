@@ -8,6 +8,7 @@ public abstract class DungeonCharacter {
     protected int attackMax;
     protected String characterName;
     protected double chanceToHit;
+    protected boolean isPlayer;
 
     public int getHitPoints() {
         return myHitPoints;
@@ -27,6 +28,10 @@ public abstract class DungeonCharacter {
         if (myHitPoints < 0) {
             myHitPoints = 0;
         }
+    }
+
+    public boolean isPlayer() {
+        return isPlayer;
     }
 
 

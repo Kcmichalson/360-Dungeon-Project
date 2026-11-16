@@ -13,6 +13,7 @@ public abstract class Monster extends DungeonCharacter {
         healMin = healMinimum;
         healMax = healMaximum;
         healChance = healChancePara;
+        isPlayer = false;
     }
 
 

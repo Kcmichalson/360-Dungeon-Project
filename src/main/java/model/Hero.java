@@ -43,6 +43,7 @@ public abstract class Hero extends DungeonCharacter {
         myBlockChance = theBlock;
         myInventory = new ArrayList<>();
         myPillarsFound = 0;
+        isPlayer = true;
     }
 
     /**
@@ -58,6 +59,19 @@ public abstract class Hero extends DungeonCharacter {
     }
 
     /**
+     * Uses a potion that's in the inventory
+     *
+     * @param potion the potion to use
+     */
+    public void usePotion(Potion potion) {
+        if (myInventory.contains(potion)) {
+            potion.use();
+            myInventory.remove(potion);
+        }
+
+    }
+
+    /**
      * Gets number of pillars the hero has collected.
      *
      * @return the number of pillars
@@ -68,15 +82,17 @@ public abstract class Hero extends DungeonCharacter {
 
     /**
      * Block incoming damage based on the hero's block chance.
-     *
-     * @param theDamage the amount of incoming damage
      */
-    public void blockAttempt(final int theDamage) {
+
+    //Note: blocking changed to return a boolean to fit battle logic better
+    public boolean blockAttempt() {
         final Random randomBlock = new Random();
+        boolean blocked = false;
 
         // I multiply it by 100 here so it scales correctly with the whole-number blockChance
         if (randomBlock.nextDouble() * MAX_PERCENTAGE > myBlockChance) {
-            takeDamage(theDamage);
+            blocked = true;
         }
+        return blocked;
     }
 }

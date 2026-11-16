@@ -9,8 +9,8 @@ public class Priestess extends Hero {
 
 
 
-    public int heal() {
+    public void heal() {
         Random healChance = new Random();
-        return healChance.nextInt();
+        this.takeDamage(-1 * (healChance.nextInt()));
     }
 }
