@@ -9,12 +9,18 @@ import java.util.Random;
  *
  * @author Vannak Traluch
  * @author Kevin Michalson
- * @version 11/08/2026
+ * @version 11/22/2026
  */
 public abstract class Hero extends DungeonCharacter {
 
     /** Maximum percentage value for block calculation. */
     private static final double MAX_PERCENTAGE = 100.0;
+
+    /** Minimum HP restored by a standard healing potion. */
+    private static final int MIN_POTION_HEAL = 10;
+
+    /** Maximum HP restored by a standard healing potion. */
+    private static final int MAX_POTION_HEAL = 16;
 
     /** Chance for the hero to block an attack. */
     private final double myBlockChance;
@@ -24,6 +30,9 @@ public abstract class Hero extends DungeonCharacter {
 
     /** Number of pillars the hero has found. */
     private int myPillarsFound;
+
+    /** Optional custom player name. */
+    private String myCustomName;
 
     /**
      * Constructs a Hero character.
@@ -36,14 +45,39 @@ public abstract class Hero extends DungeonCharacter {
      * @param theBlock the block chance percentage
      * @param theHitChance the chance to land an attack
      */
-    public Hero(final int theHitPoints, final int theSpeed, final int theAttackMinimum,
-                final int theAttackMaximum, final String theName, final int theBlock,
+    public Hero(final int theHitPoints, final int theSpeed,
+                final int theAttackMinimum, final int theAttackMaximum,
+                final String theName, final int theBlock,
                 final double theHitChance) {
-        super(theHitPoints, theSpeed, theAttackMinimum, theAttackMaximum, theName, theHitChance);
+        super(theHitPoints, theSpeed, theAttackMinimum,
+                theAttackMaximum, theName, theHitChance);
+        if (theBlock < 0 || theBlock > MAX_PERCENTAGE) {
+            throw new IllegalArgumentException(
+                    "Block chance must be between 0 and 100.");
+        }
         myBlockChance = theBlock;
         myInventory = new ArrayList<>();
         myPillarsFound = 0;
+        myCustomName = null;
         setPlayer(true);
+    }
+
+    /**
+     * Sets a custom name for the hero.
+     *
+     * @param theName the custom player name
+     */
+    public void setName(final String theName) {
+        if (theName == null || theName.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Hero name cannot be null or empty.");
+        }
+        myCustomName = theName.trim();
+    }
+
+    @Override
+    public String getName() {
+        return myCustomName != null ? myCustomName : super.getName();
     }
 
     /**
@@ -52,6 +86,10 @@ public abstract class Hero extends DungeonCharacter {
      * @param theItem the collectible to add
      */
     public void addCollectible(final Collectible theItem) {
+        if (theItem == null) {
+            throw new IllegalArgumentException(
+                    "Collectible cannot be null.");
+        }
         myInventory.add(theItem);
         if (theItem instanceof Pillar) {
             myPillarsFound++;
@@ -59,25 +97,38 @@ public abstract class Hero extends DungeonCharacter {
     }
 
     /**
-     * Uses a potion that's in the inventory
+     * Uses a potion that is in the hero's inventory.
      *
-     * @param potion the potion to use
+     * @param thePotion the potion to use
+     * @return true if the potion was found and used
      */
-    public boolean usePotion(Potion potion) {
-        boolean used_potion = false;
-        if (myInventory.contains(potion)) {
-            potion.use();
-            myInventory.remove(potion);
-            used_potion = true;
+    public boolean usePotion(final Potion thePotion) {
+        if (thePotion == null) {
+            throw new IllegalArgumentException("Potion cannot be null.");
         }
-        return used_potion;
+        boolean usedPotion = false;
+        if (myInventory.contains(thePotion)) {
+            if (thePotion instanceof HealingPotion healingPotion) {
+                healingPotion.use(this);
+            } else if (thePotion.getType() == Potion.Type.HEALING) {
+                final Random random = new Random();
+                heal(random.nextInt(MIN_POTION_HEAL, MAX_POTION_HEAL));
+            } else {
+                thePotion.use();
+            }
+            myInventory.remove(thePotion);
+            usedPotion = true;
+        }
+        return usedPotion;
     }
 
     /**
-     * Used as a reference for doing skills
+     * Executes the hero's class-specific special skill.
      *
+     * @param theEnemy the target enemy
+     * @return true if the hero earns an extra turn
      */
-    abstract boolean skill(DungeonCharacter enemy);
+    abstract boolean skill(DungeonCharacter theEnemy);
 
     /**
      * Gets number of pillars the hero has collected.
@@ -89,17 +140,21 @@ public abstract class Hero extends DungeonCharacter {
     }
 
     /**
-     * Block incoming damage based on the hero's block chance.
+     * Attempts to block incoming damage based on block chance.
+     *
+     * @return true if the attack is blocked
      */
-
-    //Note: blocking changed to return a boolean to fit battle logic better
     public boolean blockAttempt() {
         final Random randomBlock = new Random();
-
-        // I multiply it by 100 here so it scales correctly with the whole-number blockChance
-        return randomBlock.nextDouble() * MAX_PERCENTAGE > myBlockChance;
+        return randomBlock.nextDouble() * MAX_PERCENTAGE < myBlockChance;
     }
-    public java.util.List<model.Collectible> getInventory() {
+
+    /**
+     * Gets the hero's inventory list.
+     *
+     * @return the list of collectibles
+     */
+    public List<Collectible> getInventory() {
         return myInventory;
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import model.BattleLogic;
+import model.Collectible;
 import model.Dungeon;
 import model.GameState;
 import model.HealingPotion;
@@ -20,8 +21,9 @@ import view.DungeonView;
 /**
  * Controls game input and interactions between the model and view.
  *
+ * @author Kevin Michalson
  * @author Luke Frace
- * @version 11/15/2026
+ * @version 11/22/2026
  */
 public class DungeonController {
 
@@ -49,7 +51,7 @@ public class DungeonController {
                 || theHero == null
                 || theSaveManager == null) {
             throw new IllegalArgumentException(
-                    "Game, view and save manager are required.");
+                    "something is wrong with controller code");
         }
 
         myDungeon = theDungeon;
@@ -78,7 +80,7 @@ public class DungeonController {
                 playing = false;
             } else {
                 myDungeonView.displayMessage("Restarting game...");
-                // TODO implement replay.
+                // put the replay code here maybe next week
             }
         }
 
@@ -86,13 +88,17 @@ public class DungeonController {
     }
 
     private void playTurnLoop(final Scanner theInput) {
-        myDungeonView.displayMessage("Welcome to the Dungeon!");
+        myDungeonView.displayMessage("Welcome to the Dungeon, "
+                + myHero.getName() + "!");
         myDungeonView.displayMessage(
                 "Find the 4 pillars and reach the exit to win.");
         myDungeonView.displayMessage(
                 "Controls: NORTH, EAST, SOUTH, WEST to move. "
-                        + "V to view full map. I for Inventory. "
-                        + "SAVE to save. LOAD to load.");
+                        + "I for Inventory. H to Heal. "
+                        + "V to view full map. SAVE or LOAD.");
+
+        myDungeonView.displayStatus(myHero);
+        myDungeonView.displayRoom(myDungeon.getHeroCurrentRoom());
 
         boolean gameOver = false;
 
@@ -107,7 +113,9 @@ public class DungeonController {
                         myDungeonView.displayMessage(
                                 myDungeon.toString());
 
-                case "I" -> handleInventory();
+                case "I" -> myDungeonView.displayInventory(myHero);
+
+                case "H" -> handleHealPotion();
 
                 case "SAVE" -> {
                     myDungeonView.displayMessage(
@@ -124,7 +132,11 @@ public class DungeonController {
                         myDungeonView.displayMessage(
                                 "Enter a save name:");
 
-                        loadGame(theInput.nextLine().trim());
+                        if (loadGame(theInput.nextLine().trim())) {
+                            myDungeonView.displayStatus(myHero);
+                            myDungeonView.displayRoom(
+                                    myDungeon.getHeroCurrentRoom());
+                        }
 
                     } catch (final IOException exception) {
                         myDungeonView.displayError(
@@ -220,27 +232,10 @@ public class DungeonController {
             processRoomItems(currentRoom);
             processCombat(currentRoom);
 
-            myDungeonView.displayRoom(currentRoom);
-
-            System.out.print("You are in a room. Doors lead: ");
-
-            if (currentRoom.hasDoor("NORTH")) {
-                System.out.print("NORTH ");
+            if (myHero.getHitPoints() > 0) {
+                myDungeonView.displayStatus(myHero);
+                myDungeonView.displayRoom(currentRoom);
             }
-
-            if (currentRoom.hasDoor("EAST")) {
-                System.out.print("EAST ");
-            }
-
-            if (currentRoom.hasDoor("SOUTH")) {
-                System.out.print("SOUTH ");
-            }
-
-            if (currentRoom.hasDoor("WEST")) {
-                System.out.print("WEST ");
-            }
-
-            System.out.println();
 
         } else {
             myDungeonView.displayError(
@@ -255,7 +250,7 @@ public class DungeonController {
                 && currentEnemy.getHitPoints() > 0) {
 
             myDungeonView.displayMessage(
-                    "\n*** ENCOUNTER! A "
+                    "\n*** Encounter! A "
                             + currentEnemy.getName()
                             + " blocks your path! ***");
 
@@ -274,12 +269,15 @@ public class DungeonController {
         }
     }
 
-    private void handleInventory() {
+    private void handleHealPotion() {
         boolean healed = false;
-        final List<?> inventory = myHero.getInventory();
+        final List<Collectible> inventory = myHero.getInventory();
 
-        for (final Object item : inventory) {
-            if (item instanceof HealingPotion potion) {
+        for (final Collectible item : inventory) {
+            if (item instanceof HealingPotion
+                    || (item instanceof Potion potion
+                    && potion.getType() == Potion.Type.HEALING)) {
+                final Potion potion = (Potion) item;
                 myHero.usePotion(potion);
 
                 myDungeonView.displayMessage(
@@ -327,8 +325,6 @@ public class DungeonController {
             myDungeonView.displayMessage(
                     "Watch out! You fell into a pit and took "
                             + PIT_DAMAGE + " damage.");
-
-            myHero.takeDamage(10);
         }
     }
 }
