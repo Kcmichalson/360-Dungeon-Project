@@ -63,13 +63,21 @@ public abstract class Hero extends DungeonCharacter {
      *
      * @param potion the potion to use
      */
-    public void usePotion(Potion potion) {
+    public boolean usePotion(Potion potion) {
+        boolean used_potion = false;
         if (myInventory.contains(potion)) {
             potion.use();
             myInventory.remove(potion);
+            used_potion = true;
         }
-
+        return used_potion;
     }
+
+    /**
+     * Used as a reference for doing skills
+     *
+     */
+    abstract boolean skill(DungeonCharacter enemy);
 
     /**
      * Gets number of pillars the hero has collected.

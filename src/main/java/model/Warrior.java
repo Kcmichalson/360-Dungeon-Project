@@ -8,15 +8,16 @@ public class Warrior extends Hero {
         super(125, 4, 35, 60, "Warrior", 20, 0.8);
     }
 
-    public int CrushingBlow() {
+
+    @Override
+    boolean skill(DungeonCharacter enemy) {
         Random crushingBlowMod = new Random();
-        int damage = 0;
 
         if (crushingBlowMod.nextInt(100) < 40) {
-            damage = crushingBlowMod.nextInt(75,175);
+            enemy.takeDamage(crushingBlowMod.nextInt(75,175));
 
         }
 
-        return damage;
+        return false;
     }
 }

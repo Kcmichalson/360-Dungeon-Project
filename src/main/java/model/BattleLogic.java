@@ -101,7 +101,9 @@ public class BattleLogic {
             } else if (CMD_ITEM.equals(command)) {
                 System.out.println("Combat inventory not implemented yet. Try attacking.");
             } else if (CMD_SKILL.equals(command)) {
-                System.out.println("Skills not implemented yet. Try attacking.");
+                if (myHero.skill(myOpponent)) {
+                    //Insert way to reboot turn for Thief here
+                }
             } else {
                 System.out.println("Invalid command. Please type ATTACK, ITEM, or SKILL.");
             }

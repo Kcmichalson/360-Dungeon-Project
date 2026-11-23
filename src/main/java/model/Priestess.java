@@ -13,4 +13,11 @@ public class Priestess extends Hero {
         Random healChance = new Random();
         this.takeDamage(-1 * (healChance.nextInt()));
     }
+
+    @Override
+    boolean skill(DungeonCharacter enemy) {
+        Random healChance = new Random();
+        this.takeDamage(-1 * (healChance.nextInt()));
+        return false;
+    }
 }

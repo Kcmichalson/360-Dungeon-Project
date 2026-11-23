@@ -80,6 +80,8 @@ public abstract class DungeonCharacter {
         }
     }
 
+
+
     protected void setPlayer(final boolean thePlayerStatus) {
         myIsPlayer = thePlayerStatus;
     }

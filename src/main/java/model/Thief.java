@@ -7,22 +7,23 @@ public class Thief extends Hero {
         super(75, 6, 20, 40, "Thief", 40, 0.8);
     }
 
-
-    //FIXME: I don't know how turns work at the moment but when I do, make sure this refreshes the turn
-    public int SupriseAttack() {
-
+    @Override
+    boolean skill(DungeonCharacter enemy) {
+        if (enemy == null) {
+            throw new IllegalArgumentException("Target cannot be null.");
+        }
         Random surpriseAttackMod = new Random();
-        int damage = 0;
+        boolean turn_refresh = false;
 
         double surpriseChance = surpriseAttackMod.nextDouble();
         if (surpriseChance <= 60.00) {
-            damage = surpriseAttackMod.nextInt(20,40);
-        } else if (surpriseChance <= 20.00) {
-            damage = surpriseAttackMod.nextInt(20,40);
+            enemy.takeDamage(surpriseAttackMod.nextInt(20, 40));
+            turn_refresh = true;
+        } else if (surpriseChance <= 60.00) {
+            enemy.takeDamage(surpriseAttackMod.nextInt(20,40));
         }
 
-        return damage;
-
+        return turn_refresh;
 
     }
 }
