@@ -2,6 +2,8 @@ package model;
 
 import factory.MonsterFactory;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +12,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-public class Dungeon {
+public class Dungeon implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final int DEFAULT_ROWS = 5;
     private static final int DEFAULT_COLS = 5;
@@ -248,9 +253,9 @@ public class Dungeon {
 
         return isInside(nextRow, nextCol)
                 && getHeroCurrentRoom().hasDoor(
-                        DIRECTIONS[direction])
+                DIRECTIONS[direction])
                 && myMaze[nextRow][nextCol].hasDoor(
-                        DIRECTIONS[(direction + 2) % 4]);
+                DIRECTIONS[(direction + 2) % 4]);
     }
 
     public Room getHeroCurrentRoom() {

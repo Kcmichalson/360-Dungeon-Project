@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -11,7 +12,10 @@ import java.util.Objects;
  * @author Kevin Michalson
  * @version 11/08/2026
  */
-public class Room {
+public class Room implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /** The role of the room (entrance, exit, or ordinary). */
     public enum Role {

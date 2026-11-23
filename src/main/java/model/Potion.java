@@ -1,6 +1,12 @@
 package model;
 
-public class Potion implements Collectible {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Potion implements Collectible, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public enum Type {
         HEALING,

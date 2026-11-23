@@ -9,6 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import java.io.Serial;
+import java.io.Serializable;
+
 
 /**
  * Reads and writes named game saves.

@@ -1,8 +1,13 @@
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Random;
 
-public abstract class DungeonCharacter {
+public abstract class DungeonCharacter implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private int myHitPoints;
     private int myAttackSpeed;
@@ -79,8 +84,6 @@ public abstract class DungeonCharacter {
             theTarget.takeDamage(attackMod.nextInt(myAttackMin, myAttackMax));
         }
     }
-
-
 
     protected void setPlayer(final boolean thePlayerStatus) {
         myIsPlayer = thePlayerStatus;
